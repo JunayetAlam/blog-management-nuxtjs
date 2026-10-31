@@ -25,7 +25,7 @@ export function formatPost<T extends PostWithCategory>(post: T) {
 export async function findPostOr404(param: string, deleted = false) {
   const post = await prisma.post.findFirst({
     where: { ...idOrSlug(param), isDeleted: deleted },
-    select: { id: true, publishedAt: true },
+    select: { id: true, publishedAt: true, content: true, coverImage: true },
   });
   if (!post) throw createError({ statusCode: 404, message: deleted ? "Post not found in trash" : "Post not found" });
   return post;
@@ -38,6 +38,13 @@ export async function postSlugTaken(slug: string, exceptId?: string) {
     select: { id: true },
   });
   return !!found;
+}
+
+// Cloudinary assets a post references: its cover plus every image in its content
+export function postAssetNames(post: { content: string; coverImage: { name: string } | null }) {
+  const names = extractAssetNames(post.content);
+  if (post.coverImage) names.push(post.coverImage.name);
+  return names;
 }
 
 export async function assertPostRelations({ categoryId, tagIds }: { categoryId?: string | null; tagIds?: string[] }) {

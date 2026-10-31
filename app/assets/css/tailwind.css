@@ -3,6 +3,7 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -121,5 +122,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Rich text editor (Tiptap) */
+@layer components {
+  .tiptap {
+    @apply min-h-80 outline-none;
+  }
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+  }
+  .tiptap img {
+    @apply rounded-md;
+  }
+  .tiptap img.ProseMirror-selectednode {
+    @apply ring-ring ring-2 ring-offset-2;
   }
 }

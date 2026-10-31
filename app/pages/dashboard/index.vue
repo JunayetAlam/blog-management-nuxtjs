@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 definePageMeta({
-  layout: "dashboard",
+  redirect: "/dashboard/posts",
 });
 </script>
 
 <template>
-  <div></div>
+  <div />
 </template>

@@ -40,6 +40,10 @@ export default defineEventHandler(async (event) => {
       include: postInclude,
       omit: postOmit,
     });
+
+    // Images dropped from the content or a replaced cover are deleted from Cloudinary
+    await removeUnusedAssets(postAssetNames(existing), postAssetNames(post));
+
     return formatPost(post);
   } catch (error) {
     rethrowPrismaError(error);

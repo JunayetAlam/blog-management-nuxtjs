@@ -2,11 +2,6 @@ import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import type { H3Event } from "h3";
 
-export interface Asset {
-  url: string;
-  name: string;
-}
-
 type FormPart = NonNullable<
   Awaited<ReturnType<typeof readMultipartFormData>>
 >[number];
@@ -78,12 +73,16 @@ export function newAssetName(filename = "image") {
 }
 
 // Only allow touching assets inside this project's folder
+export function isProjectAssetName(name: unknown): name is string {
+  return (
+    typeof name === "string" &&
+    name.startsWith(`${assetFolder()}/`) &&
+    !name.includes("..")
+  );
+}
+
 export function assertAssetName(name: unknown): asserts name is string {
-  if (
-    typeof name !== "string" ||
-    !name.startsWith(`${assetFolder()}/`) ||
-    name.includes("..")
-  ) {
+  if (!isProjectAssetName(name)) {
     throw createError({
       statusCode: 400,
       message: `Invalid asset name: ${String(name)}`,
@@ -109,6 +108,13 @@ export function uploadWebp(buffer: Buffer, name: string, overwrite = false) {
       )
       .end(buffer);
   });
+}
+
+// Best-effort cleanup of images a post no longer uses; never fails the request
+export async function removeUnusedAssets(before: string[], after: string[]) {
+  const keep = new Set(after);
+  const unused = before.filter((name) => !keep.has(name) && isProjectAssetName(name));
+  await Promise.allSettled(unused.map(removeAsset));
 }
 
 export async function removeAsset(name: string) {

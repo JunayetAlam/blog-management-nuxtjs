@@ -4,7 +4,11 @@ export default defineNuxtConfig({
   modules: ["shadcn-nuxt"],
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  css: ["~/assets/css/tailwind.css"],
+  css: ["~/assets/css/tailwind.css", "vue-sonner/style.css"],
+  // The admin dashboard is a client-rendered SPA (rich text editor, no SEO needs)
+  routeRules: {
+    "/dashboard/**": { ssr: false },
+  },
   vite: {
     plugins: [tailwindcss()],
   },
