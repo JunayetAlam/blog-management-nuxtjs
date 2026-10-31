@@ -1,7 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
-  modules: ["shadcn-nuxt"],
+  modules: ["shadcn-nuxt", "@nuxtjs/color-mode"],
+  // Adds .dark/.light on <html> before first paint (no theme flash); dark until the user toggles
+  colorMode: {
+    classSuffix: "",
+    preference: "dark",
+    fallback: "dark",
+    storageKey: "futurescope-color-mode",
+  },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   css: ["~/assets/css/tailwind.css", "vue-sonner/style.css"],

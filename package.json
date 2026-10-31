@@ -16,6 +16,7 @@
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.4.0",
     "@hugeicons/vue": "^1.0.8",
+    "@nuxtjs/color-mode": "^4.1.0",
     "@prisma/client": "6",
     "@tiptap/extension-image": "^3.32.2",
     "@tiptap/extension-text-align": "^3.32.2",

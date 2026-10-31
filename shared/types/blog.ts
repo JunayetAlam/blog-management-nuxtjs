@@ -48,3 +48,40 @@ export interface Paginated<T> {
   data: T[];
   meta: { page: number; limit: number; total: number; totalPages: number };
 }
+
+// ----- Public blog API -----
+export interface PublicPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  coverImage: Asset | null;
+  publishedAt: string;
+  readingTime: number;
+  category: { name: string; slug: string } | null;
+  tags: { name: string; slug: string }[];
+}
+
+export interface TocItem {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+export interface PublicPostDetail extends PublicPost {
+  content: string;
+  updatedAt: string;
+  toc: TocItem[];
+  related: PublicPost[];
+}
+
+export interface Topic {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+export interface BlogTopics {
+  categories: Topic[];
+  tags: Topic[];
+}

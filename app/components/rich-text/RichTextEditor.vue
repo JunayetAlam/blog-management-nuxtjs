@@ -33,7 +33,7 @@ const editor = useEditor({
   ],
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose-base dark:prose-invert max-w-none px-4 py-3",
+      class: "prose prose-sm sm:prose-base max-w-none px-4 py-3",
       ...(props.id ? { id: props.id } : {}),
     },
     handlePaste(_view, event) {

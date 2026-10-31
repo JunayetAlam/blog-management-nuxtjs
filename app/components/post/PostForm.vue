@@ -14,14 +14,23 @@ const emit = defineEmits<{ saved: [post: Post]; cancel: [] }>();
 const isEdit = computed(() => !!props.post);
 
 const schema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(200, "Title is too long (max 200)"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(200, "Title is too long (max 200)"),
   slug: z
     .string()
     .trim()
     .max(120, "Slug is too long (max 120)")
-    .regex(/^([a-z0-9]+(?:-[a-z0-9]+)*)?$/, "Use lowercase letters, numbers and single hyphens"),
+    .regex(
+      /^([a-z0-9]+(?:-[a-z0-9]+)*)?$/,
+      "Use lowercase letters, numbers and single hyphens",
+    ),
   excerpt: z.string().trim().max(500, "Excerpt is too long (max 500)"),
-  content: z.string().refine((html) => html.trim() !== "", "Content is required"),
+  content: z
+    .string()
+    .refine((html) => html.trim() !== "", "Content is required"),
   coverImage: z.object({ url: z.string(), name: z.string() }).nullable(),
   status: z.enum(["DRAFT", "PUBLISHED"]),
   categoryId: z.string().nullable(),
@@ -42,7 +51,16 @@ function toFormValues(post?: Post | null): FormValues {
   };
 }
 
-const { defineField, handleSubmit, errors, meta, isSubmitting, submitCount, resetForm, setFieldError } = useForm({
+const {
+  defineField,
+  handleSubmit,
+  errors,
+  meta,
+  isSubmitting,
+  submitCount,
+  resetForm,
+  setFieldError,
+} = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: toFormValues(props.post),
 });
@@ -72,19 +90,36 @@ const slugPreview = computed(() => slugify(title.value ?? ""));
 // Images uploaded while this form is open; any not used when saving (or all of them, on discard) are deleted
 const { remove: removeAssets } = useAssets();
 const sessionUploads = new Set<string>();
-const trackUploads = (assets: Asset[]) => assets.forEach((a) => sessionUploads.add(a.name));
+const trackUploads = (assets: Asset[]) =>
+  assets.forEach((a) => sessionUploads.add(a.name));
 
-const initialCategory = computed(() => (props.post?.category ? [props.post.category] : []));
+const initialCategory = computed(() =>
+  props.post?.category ? [props.post.category] : [],
+);
 
 function applyServerErrors(error: unknown) {
-  const body = (error as { data?: { statusCode?: number; message?: string; data?: { issues?: { path: string; message: string }[] } } }).data;
-  const message = body?.message ?? errorMessage(error, "Could not save the post");
+  const body = (
+    error as {
+      data?: {
+        statusCode?: number;
+        message?: string;
+        data?: { issues?: { path: string; message: string }[] };
+      };
+    }
+  ).data;
+  const message =
+    body?.message ?? errorMessage(error, "Could not save the post");
 
   if (body?.data?.issues?.length) {
-    for (const issue of body.data.issues) setFieldError(issue.path.split(".")[0] as keyof FormValues, issue.message);
+    for (const issue of body.data.issues)
+      setFieldError(
+        issue.path.split(".")[0] as keyof FormValues,
+        issue.message,
+      );
     return;
   }
-  if (body?.statusCode === 409 && /slug/i.test(message)) return setFieldError("slug", "This slug is already in use");
+  if (body?.statusCode === 409 && /slug/i.test(message))
+    return setFieldError("slug", "This slug is already in use");
   if (/category/i.test(message)) return setFieldError("categoryId", message);
   if (/tag/i.test(message)) return setFieldError("tagIds", message);
   toast.error(message);
@@ -105,7 +140,10 @@ const onSubmit = handleSubmit(async (values) => {
 
   try {
     const saved = props.post
-      ? await $fetch<Post>(`/api/posts/${props.post.id}`, { method: "PATCH", body })
+      ? await $fetch<Post>(`/api/posts/${props.post.id}`, {
+          method: "PATCH",
+          body,
+        })
       : await $fetch<Post>("/api/posts", { method: "POST", body });
 
     const used = new Set(extractAssetNames(saved.content));
@@ -160,7 +198,11 @@ defineExpose({ isDirty: computed(() => meta.value.dirty), isSubmitting });
               :aria-invalid="!!errors.slug"
             />
             <FieldDescription v-if="!errors.slug">
-              {{ isEdit ? "Changing the slug changes the post's URL." : "Leave empty to generate it from the title." }}
+              {{
+                isEdit
+                  ? "Changing the slug changes the post's URL."
+                  : "Leave empty to generate it from the title."
+              }}
             </FieldDescription>
             <FieldError :errors="errors.slug ? [errors.slug] : []" />
           </Field>
@@ -217,7 +259,9 @@ defineExpose({ isDirty: computed(() => meta.value.dirty), isSubmitting });
               :invalid="!!errors.categoryId"
               @blur="categoryAttrs.onBlur"
             />
-            <FieldError :errors="errors.categoryId ? [errors.categoryId] : []" />
+            <FieldError
+              :errors="errors.categoryId ? [errors.categoryId] : []"
+            />
           </Field>
 
           <Field :data-invalid="!!errors.tagIds">
@@ -247,18 +291,31 @@ defineExpose({ isDirty: computed(() => meta.value.dirty), isSubmitting });
               @blur="coverImageAttrs.onBlur"
               @uploaded="(asset) => trackUploads([asset])"
             />
-            <FieldError :errors="errors.coverImage ? [errors.coverImage] : []" />
+            <FieldError
+              :errors="errors.coverImage ? [errors.coverImage] : []"
+            />
           </Field>
         </FieldGroup>
       </div>
     </div>
 
-    <div class="bg-background flex items-center justify-end gap-2 border-t px-6 py-4">
-      <Button type="button" variant="outline" :disabled="isSubmitting" @click="emit('cancel')">
+    <div
+      class="bg-background flex items-center justify-end gap-2 border-t px-6 py-4"
+    >
+      <Button
+        type="button"
+        variant="outline"
+        :disabled="isSubmitting"
+        @click="emit('cancel')"
+      >
         Cancel
       </Button>
       <Button type="submit" :disabled="isSubmitting || (isEdit && !meta.dirty)">
-        <HugeiconsIcon v-if="isSubmitting" :icon="Loading03Icon" class="size-4 animate-spin" />
+        <HugeiconsIcon
+          v-if="isSubmitting"
+          :icon="Loading03Icon"
+          class="size-4 animate-spin"
+        />
         {{ isEdit ? "Save changes" : "Create post" }}
       </Button>
     </div>
