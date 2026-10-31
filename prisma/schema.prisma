@@ -12,13 +12,21 @@ enum PostStatus {
   PUBLISHED
 }
 
+// Matches the { url, name } returned by /api/assets
+type Image {
+  url  String
+  name String
+}
+
 model Post {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   slug        String     @unique
   excerpt     String?
   content     String
-  coverImage  String?
+  // Plain-text copy of content, used for search
+  contentText String     @default("")
+  coverImage  Image?
   status      PostStatus @default(DRAFT)
   publishedAt DateTime?
 
@@ -28,10 +36,14 @@ model Post {
   tagIds String[] @db.ObjectId
   tags   Tag[]    @relation(fields: [tagIds], references: [id])
 
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status, publishedAt])
+  @@index([isDeleted, status, publishedAt])
+  @@index([categoryId])
   @@map("posts")
 }
 
@@ -41,6 +53,9 @@ model Category {
   slug        String  @unique
   description String?
   posts       Post[]
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,6 +70,9 @@ model Tag {
 
   postIds String[] @db.ObjectId
   posts   Post[]   @relation(fields: [postIds], references: [id])
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
