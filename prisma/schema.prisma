@@ -1,0 +1,63 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Post {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String     @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  status      PostStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  categoryId String?   @db.ObjectId
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  tagIds String[] @db.ObjectId
+  tags   Tag[]    @relation(fields: [tagIds], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("posts")
+}
+
+model Category {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  posts       Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Tag {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  slug String @unique
+
+  postIds String[] @db.ObjectId
+  posts   Post[]   @relation(fields: [postIds], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tags")
+}
